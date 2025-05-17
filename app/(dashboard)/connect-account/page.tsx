@@ -1,32 +1,49 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Facebook } from "lucide-react"
-import { useAuth } from "@/components/auth-provider"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "sonner"
+import { useState } from "react";
+import { Facebook } from "lucide-react";
+import { useAuth } from "@/components/auth-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
 
 export default function ConnectAccountPage() {
-  const { user, connectInstagram } = useAuth()
-  const [isConnecting, setIsConnecting] = useState(false)
+  const { user, connectInstagram } = useAuth();
+  const [isConnecting, setIsConnecting] = useState(false);
 
-  const handleConnect = () => {
-    setIsConnecting(true)
+  const handleConnect = async () => {
+    setIsConnecting(true);
 
-    // Simulate API connection delay
-    setTimeout(() => {
-      connectInstagram(true, "IG12345678")
-      setIsConnecting(false)
-      toast.success("Instagram account connected successfully!")
-    }, 1500)
-  }
+    const state = "randomStringForCSRFProtection";
+    const scope = encodeURIComponent("instagram_basic,pages_show_list");
+    const clientId = process.env.META_CLIENT_ID || "1370480770821414";
+    const redirectUri = encodeURIComponent(
+      process.env.META_REDIRECT_URI ||
+        "https://2b5c-2a09-bac5-3a14-88c-00-da-8d.ngrok-free.app/callback"
+    );
+
+    const loginUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
+
+    // Redirect user ke Facebook OAuth
+    window.location.href = loginUrl;
+    // setTimeout(() => {
+    //   connectInstagram(true, "IG12345678");
+    //   setIsConnecting(false);
+    //   toast.success("Instagram account connected successfully!");
+    // }, 1500);
+  };
 
   const handleDisconnect = () => {
-    connectInstagram(false)
-    toast.success("Instagram account disconnected")
-  }
+    connectInstagram(false);
+    toast.success("Instagram account disconnected");
+  };
 
   return (
     <div className="space-y-6">
@@ -34,7 +51,8 @@ export default function ConnectAccountPage() {
         <CardHeader>
           <CardTitle>Connect Instagram Account</CardTitle>
           <CardDescription>
-            Link your Instagram business account to manage comments, messages, and analytics
+            Link your Instagram business account to manage comments, messages,
+            and analytics
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -42,12 +60,17 @@ export default function ConnectAccountPage() {
             <div className="space-y-6">
               <div className="flex items-center gap-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
+                  <AvatarImage
+                    src={user.avatar || "/placeholder.svg"}
+                    alt={user.username}
+                  />
                   <AvatarFallback>{user.username[0]}</AvatarFallback>
                 </Avatar>
                 <div>
                   <h3 className="font-medium">@{user.username}</h3>
-                  <p className="text-sm text-muted-foreground">Account ID: {user.accountId}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Account ID: {user.accountId}
+                  </p>
                 </div>
               </div>
               <div className="flex flex-col gap-2 sm:flex-row">
@@ -65,11 +88,18 @@ export default function ConnectAccountPage() {
               <div className="text-center">
                 <h3 className="text-lg font-medium">Connect Your Account</h3>
                 <p className="text-sm text-muted-foreground">
-                  Connect your Instagram business account via Facebook to manage your social media presence
+                  Connect your Instagram business account via Facebook to manage
+                  your social media presence
                 </p>
               </div>
-              <Button className="w-full sm:w-auto" onClick={handleConnect} disabled={isConnecting}>
-                {isConnecting ? "Connecting..." : "Connect Instagram via Facebook"}
+              <Button
+                className="w-full sm:w-auto"
+                onClick={handleConnect}
+                disabled={isConnecting}
+              >
+                {isConnecting
+                  ? "Connecting..."
+                  : "Connect Instagram via Facebook"}
               </Button>
             </div>
           )}
@@ -79,7 +109,9 @@ export default function ConnectAccountPage() {
       <Card>
         <CardHeader>
           <CardTitle>Connection Benefits</CardTitle>
-          <CardDescription>What you can do after connecting your Instagram account</CardDescription>
+          <CardDescription>
+            What you can do after connecting your Instagram account
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ul className="grid gap-4 md:grid-cols-2">
@@ -92,12 +124,19 @@ export default function ConnectAccountPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
               </div>
               <div>
                 <h4 className="font-medium">Manage Comments</h4>
-                <p className="text-sm text-muted-foreground">View and respond to comments on your posts</p>
+                <p className="text-sm text-muted-foreground">
+                  View and respond to comments on your posts
+                </p>
               </div>
             </li>
             <li className="flex items-start gap-2">
@@ -109,12 +148,19 @@ export default function ConnectAccountPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
               </div>
               <div>
                 <h4 className="font-medium">Direct Messages</h4>
-                <p className="text-sm text-muted-foreground">Read and reply to direct messages</p>
+                <p className="text-sm text-muted-foreground">
+                  Read and reply to direct messages
+                </p>
               </div>
             </li>
             <li className="flex items-start gap-2">
@@ -126,12 +172,19 @@ export default function ConnectAccountPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
               </div>
               <div>
                 <h4 className="font-medium">Analytics</h4>
-                <p className="text-sm text-muted-foreground">View insights and performance metrics</p>
+                <p className="text-sm text-muted-foreground">
+                  View insights and performance metrics
+                </p>
               </div>
             </li>
             <li className="flex items-start gap-2">
@@ -143,17 +196,24 @@ export default function ConnectAccountPage() {
                   viewBox="0 0 24 24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M5 13l4 4L19 7"
+                  ></path>
                 </svg>
               </div>
               <div>
                 <h4 className="font-medium">Automated Responses</h4>
-                <p className="text-sm text-muted-foreground">Set up auto-replies for common questions</p>
+                <p className="text-sm text-muted-foreground">
+                  Set up auto-replies for common questions
+                </p>
               </div>
             </li>
           </ul>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

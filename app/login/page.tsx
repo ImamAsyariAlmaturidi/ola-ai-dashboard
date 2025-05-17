@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { loginUser, verifyCode } from "../actions/auth";
 
 const LoginPageLottie = dynamic(() => import("@/components/loginPageLottie"), {
   ssr: false,
@@ -37,14 +38,21 @@ export default function LoginPage() {
   >("idle");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSendOtp = (e: React.FormEvent) => {
+  const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !email.includes("@")) {
       toast.error("Please enter a valid email address");
       return;
     }
-
+    const res = await loginUser(email);
+    if (!res) {
+      toast.error("Send otp failed");
+      setIsLoading(false);
+      setIsOtpSent(false);
+      return;
+    }
+    toast.success("OTP sent successfully");
     setIsLoading(true);
 
     // Simulate API call to send OTP
@@ -67,23 +75,24 @@ export default function LoginPage() {
     setIsLoading(true);
 
     // Simulate OTP verification
-    setTimeout(() => {
-      if (otp === DUMMY_OTP) {
-        setVerificationStatus("success");
-
-        // Simulate login after successful verification
-        setTimeout(() => {
-          login({
-            username: email.split("@")[0],
-            email,
-            avatar: "/placeholder.svg?height=40&width=40",
-          });
-          router.push("/dashboard");
-        }, 1000);
-      } else {
-        setVerificationStatus("error");
+    setTimeout(async () => {
+      const res = await verifyCode(email, otp);
+      if (!res) {
         toast.error("Invalid verification code");
+        setIsLoading(false);
+        setVerificationStatus("error");
+        return;
       }
+      localStorage.setItem("access_token", res.token);
+      setVerificationStatus("success");
+      setTimeout(() => {
+        login({
+          username: email.split("@")[0],
+          email,
+          avatar: "/placeholder.svg?height=40&width=40",
+        });
+        router.push("/dashboard");
+      }, 1000);
       setIsLoading(false);
     }, 1500);
   };

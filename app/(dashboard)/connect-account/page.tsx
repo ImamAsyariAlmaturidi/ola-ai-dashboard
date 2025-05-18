@@ -31,8 +31,10 @@ export default function ConnectAccountPage() {
       return;
     }
     const scope = encodeURIComponent("instagram_basic,pages_show_list");
-    const clientId = process.env.META_CLIENT_ID;
-    const redirectUri = encodeURIComponent(process.env.META_REDIRECT_URI!);
+    const clientId = process.env.NEXT_PUBLIC_META_CLIENT_ID;
+    const redirectUri = encodeURIComponent(
+      process.env.NEXT_PUBLIC_META_REDIRECT_URI!
+    );
 
     const loginUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
 

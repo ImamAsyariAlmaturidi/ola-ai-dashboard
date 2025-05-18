@@ -27,10 +27,11 @@ export async function verifyCode(email: string, code: string) {
     body: JSON.stringify({ email, code }),
   });
 
+  const data = await res.json();
+  console.log("verifyCode", data);
   if (!res.ok) {
     throw new Error("Failed to verify code");
   }
 
-  const data = await res.json();
   return data;
 }

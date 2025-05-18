@@ -1,16 +1,14 @@
 "use server";
 
+const backendURL = process.env.NEXT_PUBLIC_BACKEND_URL;
 export async function loginUser(email: string) {
-  const res = await fetch(
-    "https://d0c0-114-122-102-47.ngrok-free.app/auth/login",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    }
-  );
+  const res = await fetch(`${backendURL}/auth/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
 
   if (!res.ok) {
     throw new Error("Failed to login");
@@ -21,16 +19,13 @@ export async function loginUser(email: string) {
 }
 
 export async function verifyCode(email: string, code: string) {
-  const res = await fetch(
-    "https://d0c0-114-122-102-47.ngrok-free.app/auth/verify",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, code }),
-    }
-  );
+  const res = await fetch(`${backendURL}/auth/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, code }),
+  });
 
   if (!res.ok) {
     throw new Error("Failed to verify code");

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Facebook } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
+import { set } from "date-fns";
 
 export default function ConnectAccountPage() {
   const { user, connectInstagram } = useAuth();
@@ -21,12 +22,20 @@ export default function ConnectAccountPage() {
   const handleConnect = async () => {
     setIsConnecting(true);
 
-    const state = "randomStringForCSRFProtection";
+    const state = localStorage.getItem("access_token");
+    if (!state) {
+      toast.error("Please login to continue");
+      setIsConnecting(false);
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 2000);
+      return;
+    }
     const scope = encodeURIComponent("instagram_basic,pages_show_list");
     const clientId = process.env.META_CLIENT_ID || "1370480770821414";
     const redirectUri = encodeURIComponent(
       process.env.META_REDIRECT_URI ||
-        "https://2b5c-2a09-bac5-3a14-88c-00-da-8d.ngrok-free.app/callback"
+        "https://051a-2a09-bac5-3a12-88c-00-da-66.ngrok-free.app/callback"
     );
 
     const loginUrl = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${clientId}&redirect_uri=${redirectUri}&state=${state}&scope=${scope}`;
@@ -44,6 +53,32 @@ export default function ConnectAccountPage() {
     connectInstagram(false);
     toast.success("Instagram account disconnected");
   };
+
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const successFlag = url.searchParams.get("success");
+
+    if (successFlag === "true") {
+      // panggil API user/me untuk dapat data user terbaru
+      fetch("/api/user/me", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`, // sesuaikan dengan cara kamu simpan token
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          // update context state untuk connected Instagram dan accountId misal
+          connectInstagram(true, data.accountId);
+        })
+        .catch(() => {
+          // error handling bisa ditambahin disini
+        });
+
+      // hapus flag success dari URL biar gak trigger lagi pas reload
+      url.searchParams.delete("success");
+      window.history.replaceState({}, "", url.pathname);
+    }
+  }, []);
 
   return (
     <div className="space-y-6">

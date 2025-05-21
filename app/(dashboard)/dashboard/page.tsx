@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { InstagramProfile, useAuth } from "@/components/auth-provider";
+import { type InstagramProfile, useAuth } from "@/components/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   ArrowUpRight,
   BarChart3,
@@ -27,6 +29,8 @@ import {
   TrendingUp,
   Users,
   XCircle,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { getInstagramProfile } from "@/app/actions/instagramService";
 
@@ -107,20 +111,36 @@ const campaigns = [
 export default function DashboardPage() {
   const { user, instagramProfile, setInstagramProfile } = useAuth();
   const [timeframe, setTimeframe] = useState("week");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
     async function fetchProfile() {
       try {
+        setIsLoading(true);
         const profile = (await getInstagramProfile(
           token!
         )) as InstagramProfile[];
 
-        profile[0].connected = true;
-        setInstagramProfile(profile[0]);
+        if (profile && profile.length > 0) {
+          profile[0].connected = true;
+          setInstagramProfile(profile[0]);
+        }
+        setError(null);
       } catch (error) {
         console.error("Error fetching Instagram profile:", error);
+        setError("Failed to load profile data");
+      } finally {
+        // Add a small delay to prevent flickering for fast connections
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 500);
       }
     }
 
@@ -128,8 +148,10 @@ export default function DashboardPage() {
       fetchProfile();
     } else {
       console.log("Using existing Instagram profile:", instagramProfile);
+      setIsLoading(false);
     }
   }, [instagramProfile, setInstagramProfile]);
+
   // Default Instagram profile data for preview
   const dummyProfile = {
     username: "instagram_business",
@@ -185,101 +207,132 @@ export default function DashboardPage() {
         <CardHeader className="pb-2">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <CardTitle className="text-2xl">
-                Welcome, @{profileData.username}
-              </CardTitle>
-              <CardDescription>
-                Here's what's happening with your Instagram business account
-              </CardDescription>
+              {isLoading ? (
+                <>
+                  <Skeleton className="h-8 w-48 mb-2" />
+                  <Skeleton className="h-4 w-64" />
+                </>
+              ) : (
+                <>
+                  <CardTitle className="text-2xl">
+                    Welcome, @{profileData.username}
+                  </CardTitle>
+                  <CardDescription>
+                    Here's what's happening with your Instagram business account
+                  </CardDescription>
+                </>
+              )}
             </div>
             <div className="flex items-center gap-2">
-              {profileData.connected ? (
+              {isLoading ? (
+                <Skeleton className="h-8 w-32" />
+              ) : profileData.connected ? (
                 <div className="flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400">
                   <CheckCircle className="h-4 w-4" />
                   <span>Connected</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400">
-                  <XCircle className="h-4 w-4" />
-                  <span>Not Connected</span>
-                </div>
-              )}
-              {!profileData.connected && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="ml-2"
-                  onClick={() => (window.location.href = "/connect-account")}
-                >
-                  Connect Now
-                </Button>
+                <>
+                  <div className="flex items-center gap-1 rounded-full bg-red-500/10 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400">
+                    <XCircle className="h-4 w-4" />
+                    <span>Not Connected</span>
+                  </div>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => (window.location.href = "/connect-account")}
+                  >
+                    Connect Now
+                  </Button>
+                </>
               )}
             </div>
           </div>
         </CardHeader>
         <CardContent className="pb-2">
           <div className="flex flex-col items-start gap-6 sm:flex-row">
-            <Avatar className="h-20 w-20 border-4 border-background">
-              <AvatarImage
-                src={profileData.profilePictureUrl || "/placeholder.svg"}
-                alt={profileData.username}
-              />
-              <AvatarFallback>{profileData.username[0]}</AvatarFallback>
-            </Avatar>
+            {isLoading ? (
+              <Skeleton className="h-20 w-20 rounded-full" />
+            ) : (
+              <Avatar className="h-20 w-20 border-4 border-background">
+                <AvatarImage
+                  src={profileData.profilePictureUrl || "/placeholder.svg"}
+                  alt={profileData.username}
+                />
+                <AvatarFallback>{profileData.username[0]}</AvatarFallback>
+              </Avatar>
+            )}
             <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Followers
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">
-                    {profileData.followersCount.toLocaleString()}
-                  </p>
-                  <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
-                    <TrendingUp className="mr-0.5 h-3 w-3" />
-                    {stats.followersGrowth}%
-                  </span>
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">
+                      {profileData.followersCount.toLocaleString()}
+                    </p>
+                    <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
+                      <TrendingUp className="mr-0.5 h-3 w-3" />
+                      {stats.followersGrowth}%
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Engagement
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">{stats.engagement}%</p>
-                  <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
-                    <TrendingUp className="mr-0.5 h-3 w-3" />
-                    {stats.engagementGrowth}%
-                  </span>
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">{stats.engagement}%</p>
+                    <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
+                      <TrendingUp className="mr-0.5 h-3 w-3" />
+                      {stats.engagementGrowth}%
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Impressions
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">
-                    {stats.impressions.toLocaleString()}
-                  </p>
-                  <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
-                    <TrendingUp className="mr-0.5 h-3 w-3" />
-                    {stats.impressionsGrowth}%
-                  </span>
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">
+                      {stats.impressions.toLocaleString()}
+                    </p>
+                    <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
+                      <TrendingUp className="mr-0.5 h-3 w-3" />
+                      {stats.impressionsGrowth}%
+                    </span>
+                  </div>
+                )}
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-medium text-muted-foreground">
                   Reach
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">
-                    {stats.reach.toLocaleString()}
-                  </p>
-                  <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
-                    <TrendingUp className="mr-0.5 h-3 w-3" />
-                    {stats.reachGrowth}%
-                  </span>
-                </div>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-20" />
+                ) : (
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-2xl font-bold">
+                      {stats.reach.toLocaleString()}
+                    </p>
+                    <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
+                      <TrendingUp className="mr-0.5 h-3 w-3" />
+                      {stats.reachGrowth}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -295,82 +348,75 @@ export default function DashboardPage() {
 
       {/* Business Metrics */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Engagement Rate
-            </CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.engagement}%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">
-                +{stats.engagementGrowth}%
-              </span>{" "}
-              from last {timeframe}
-            </p>
-            <div className="mt-3">
-              <Progress value={stats.engagement * 10} className="h-1" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Conversion Rate
-            </CardTitle>
-            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.conversionRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">
-                +{stats.conversionGrowth}%
-              </span>{" "}
-              from last {timeframe}
-            </p>
-            <div className="mt-3">
-              <Progress value={stats.conversionRate * 10} className="h-1" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Audience Growth
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">+{stats.followersGrowth}%</div>
-            <p className="text-xs text-muted-foreground">
-              +{Math.round(stats.followers * (stats.followersGrowth / 100))} new
-              followers this {timeframe}
-            </p>
-            <div className="mt-3">
-              <Progress value={stats.followersGrowth * 5} className="h-1" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">
-              Estimated Revenue
-            </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$1,245</div>
-            <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">+12.5%</span>{" "}
-              from last {timeframe}
-            </p>
-            <div className="mt-3">
-              <Progress value={62.5} className="h-1" />
-            </div>
-          </CardContent>
-        </Card>
+        {isLoading
+          ? Array(4)
+              .fill(0)
+              .map((_, i) => (
+                <Card key={i}>
+                  <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-4 rounded-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-4 w-24 mb-3" />
+                    <Skeleton className="h-2 w-full" />
+                  </CardContent>
+                </Card>
+              ))
+          : [
+              {
+                title: "Engagement Rate",
+                icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
+                value: `${stats.engagement}%`,
+                change: `+${stats.engagementGrowth}%`,
+                progress: stats.engagement * 10,
+              },
+              {
+                title: "Conversion Rate",
+                icon: <ShoppingBag className="h-4 w-4 text-muted-foreground" />,
+                value: `${stats.conversionRate}%`,
+                change: `+${stats.conversionGrowth}%`,
+                progress: stats.conversionRate * 10,
+              },
+              {
+                title: "Audience Growth",
+                icon: <Users className="h-4 w-4 text-muted-foreground" />,
+                value: `+${stats.followersGrowth}%`,
+                change: `+${Math.round(
+                  stats.followers * (stats.followersGrowth / 100)
+                )} new followers`,
+                progress: stats.followersGrowth * 5,
+              },
+              {
+                title: "Estimated Revenue",
+                icon: <DollarSign className="h-4 w-4 text-muted-foreground" />,
+                value: "$1,245",
+                change: "+12.5%",
+                progress: 62.5,
+              },
+            ].map((metric, i) => (
+              <Card key={i}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {metric.title}
+                  </CardTitle>
+                  {metric.icon}
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{metric.value}</div>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-green-600 dark:text-green-400">
+                      {metric.change}
+                    </span>{" "}
+                    from last {timeframe}
+                  </p>
+                  <div className="mt-3">
+                    <Progress value={metric.progress} className="h-1" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
       </div>
 
       {/* Marketing Campaigns */}
@@ -388,73 +434,89 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {campaigns.map((campaign) => (
-              <div
-                key={campaign.id}
-                className="flex flex-col justify-between gap-2 rounded-lg border p-4 sm:flex-row sm:items-center"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{campaign.name}</h3>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        campaign.status === "Active"
-                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                          : campaign.status === "Scheduled"
-                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                          : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
-                      }`}
-                    >
-                      {campaign.status}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {campaign.status === "Scheduled"
-                      ? "Starts in 3 days"
-                      : `Reach: ${campaign.reach.toLocaleString()} impressions`}
-                  </p>
-                </div>
-                {campaign.status !== "Scheduled" && (
-                  <div className="flex flex-wrap gap-3 sm:gap-6">
-                    <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Engagement
-                      </p>
-                      <p className="text-sm font-bold">
-                        {campaign.engagement}%
+            {isLoading
+              ? Array(3)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div key={i} className="rounded-lg border p-4">
+                      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                        <div className="space-y-2">
+                          <Skeleton className="h-5 w-32" />
+                          <Skeleton className="h-4 w-48" />
+                        </div>
+                        <div className="flex flex-wrap gap-3 sm:gap-6">
+                          <Skeleton className="h-8 w-24" />
+                        </div>
+                      </div>
+                    </div>
+                  ))
+              : campaigns.map((campaign) => (
+                  <div
+                    key={campaign.id}
+                    className="flex flex-col justify-between gap-2 rounded-lg border p-4 sm:flex-row sm:items-center"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium">{campaign.name}</h3>
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                            campaign.status === "Active"
+                              ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                              : campaign.status === "Scheduled"
+                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                              : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
+                          }`}
+                        >
+                          {campaign.status}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {campaign.status === "Scheduled"
+                          ? "Starts in 3 days"
+                          : `Reach: ${campaign.reach.toLocaleString()} impressions`}
                       </p>
                     </div>
-                    <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        Conversion
-                      </p>
-                      <p className="text-sm font-bold">
-                        {campaign.conversion}%
-                      </p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">
-                        ROI
-                      </p>
-                      <p className="text-sm font-bold">{campaign.roi}x</p>
-                    </div>
-                    <Button variant="outline" size="sm" className="ml-auto">
-                      View Details
-                    </Button>
+                    {campaign.status !== "Scheduled" && (
+                      <div className="flex flex-wrap gap-3 sm:gap-6">
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Engagement
+                          </p>
+                          <p className="text-sm font-bold">
+                            {campaign.engagement}%
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            Conversion
+                          </p>
+                          <p className="text-sm font-bold">
+                            {campaign.conversion}%
+                          </p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-xs font-medium text-muted-foreground">
+                            ROI
+                          </p>
+                          <p className="text-sm font-bold">{campaign.roi}x</p>
+                        </div>
+                        <Button variant="outline" size="sm" className="ml-auto">
+                          View Details
+                        </Button>
+                      </div>
+                    )}
+                    {campaign.status === "Scheduled" && (
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                        <Button variant="default" size="sm">
+                          Launch Now
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                )}
-                {campaign.status === "Scheduled" && (
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    <Button variant="default" size="sm">
-                      Launch Now
-                    </Button>
-                  </div>
-                )}
-              </div>
-            ))}
+                ))}
           </div>
         </CardContent>
       </Card>
@@ -470,46 +532,69 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentPosts.map((post) => (
-                <div key={post.id} className="flex items-center gap-4">
-                  <div className="h-20 w-20 overflow-hidden rounded-md bg-muted">
-                    <img
-                      src={post.image || "/placeholder.svg"}
-                      alt="Post thumbnail"
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <p className="font-medium">Post #{post.id}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {post.date}
-                      </p>
-                    </div>
-                    <div className="mt-1 flex gap-4">
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">
-                          {post.likes.toLocaleString()}
-                        </span>
+              {isLoading
+                ? Array(3)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className="flex items-center gap-4">
+                        <Skeleton className="h-20 w-20 rounded-md" />
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Skeleton className="h-5 w-16" />
+                            <Skeleton className="h-4 w-12" />
+                          </div>
+                          <div className="flex gap-4">
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-16" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                          <Skeleton className="h-2 w-full" />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">{post.comments}</span>
+                    ))
+                : recentPosts.map((post) => (
+                    <div key={post.id} className="flex items-center gap-4">
+                      <div className="h-20 w-20 overflow-hidden rounded-md bg-muted">
+                        <img
+                          src={post.image || "/placeholder.svg"}
+                          alt="Post thumbnail"
+                          className="h-full w-full object-cover"
+                        />
                       </div>
-                      <div className="flex items-center gap-1">
-                        <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">
-                          {post.engagement}% engagement
-                        </span>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="font-medium">Post #{post.id}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {post.date}
+                          </p>
+                        </div>
+                        <div className="mt-1 flex gap-4">
+                          <div className="flex items-center gap-1">
+                            <Heart className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">
+                              {post.likes.toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">{post.comments}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+                            <span className="text-sm">
+                              {post.engagement}% engagement
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <Progress
+                            value={post.engagement * 10}
+                            className="h-1"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-2">
-                      <Progress value={post.engagement * 10} className="h-1" />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  ))}
             </div>
           </CardContent>
           <CardFooter>
@@ -530,70 +615,113 @@ export default function DashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Age Groups</p>
-                  <p className="text-xs text-muted-foreground">% of audience</p>
-                </div>
-                <div className="space-y-1">
+            {isLoading ? (
+              <div className="space-y-6">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs">18-24</p>
-                    <p className="text-xs">35%</p>
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
-                  <Progress value={35} className="h-1" />
+                  {Array(4)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-12" />
+                          <Skeleton className="h-4 w-8" />
+                        </div>
+                        <Skeleton className="h-2 w-full" />
+                      </div>
+                    ))}
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs">25-34</p>
-                    <p className="text-xs">42%</p>
+                    <Skeleton className="h-5 w-24" />
+                    <Skeleton className="h-4 w-20" />
                   </div>
-                  <Progress value={42} className="h-1" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs">35-44</p>
-                    <p className="text-xs">15%</p>
-                  </div>
-                  <Progress value={15} className="h-1" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs">45+</p>
-                    <p className="text-xs">8%</p>
-                  </div>
-                  <Progress value={8} className="h-1" />
+                  {Array(3)
+                    .fill(0)
+                    .map((_, i) => (
+                      <div key={i} className="space-y-1">
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-24" />
+                          <Skeleton className="h-4 w-8" />
+                        </div>
+                        <Skeleton className="h-2 w-full" />
+                      </div>
+                    ))}
                 </div>
               </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">Age Groups</p>
+                    <p className="text-xs text-muted-foreground">
+                      % of audience
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">18-24</p>
+                      <p className="text-xs">35%</p>
+                    </div>
+                    <Progress value={35} className="h-1" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">25-34</p>
+                      <p className="text-xs">42%</p>
+                    </div>
+                    <Progress value={42} className="h-1" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">35-44</p>
+                      <p className="text-xs">15%</p>
+                    </div>
+                    <Progress value={15} className="h-1" />
+                  </div>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">45+</p>
+                      <p className="text-xs">8%</p>
+                    </div>
+                    <Progress value={8} className="h-1" />
+                  </div>
+                </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium">Top Locations</p>
-                  <p className="text-xs text-muted-foreground">% of audience</p>
-                </div>
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs">United States</p>
-                    <p className="text-xs">38%</p>
+                    <p className="text-sm font-medium">Top Locations</p>
+                    <p className="text-xs text-muted-foreground">
+                      % of audience
+                    </p>
                   </div>
-                  <Progress value={38} className="h-1" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs">United Kingdom</p>
-                    <p className="text-xs">24%</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">United States</p>
+                      <p className="text-xs">38%</p>
+                    </div>
+                    <Progress value={38} className="h-1" />
                   </div>
-                  <Progress value={24} className="h-1" />
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs">Canada</p>
-                    <p className="text-xs">18%</p>
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">United Kingdom</p>
+                      <p className="text-xs">24%</p>
+                    </div>
+                    <Progress value={24} className="h-1" />
                   </div>
-                  <Progress value={18} className="h-1" />
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs">Canada</p>
+                      <p className="text-xs">18%</p>
+                    </div>
+                    <Progress value={18} className="h-1" />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
           </CardContent>
           <CardFooter>
             <Button variant="link" className="px-0 text-sm" asChild>
@@ -616,50 +744,101 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-lg border bg-card p-4 shadow-sm">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <Users className="h-4 w-4 text-primary" />
-              </div>
-              <h3 className="mt-4 font-medium">Engage with Followers</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                You have 15 unanswered comments. Respond to increase engagement.
-              </p>
-              <Button
-                variant="link"
-                className="mt-2 h-auto p-0 text-sm"
-                asChild
-              >
-                <Link href="/comments">View Comments</Link>
-              </Button>
-            </div>
-            <div className="rounded-lg border bg-card p-4 shadow-sm">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <BarChart3 className="h-4 w-4 text-primary" />
-              </div>
-              <h3 className="mt-4 font-medium">Optimize Posting Schedule</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Your audience is most active at 6-8 PM. Schedule posts
-                accordingly.
-              </p>
-              <Button variant="link" className="mt-2 h-auto p-0 text-sm">
-                Create Schedule
-              </Button>
-            </div>
-            <div className="rounded-lg border bg-card p-4 shadow-sm">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                <ShoppingBag className="h-4 w-4 text-primary" />
-              </div>
-              <h3 className="mt-4 font-medium">Set Up Shop Feature</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Increase sales by tagging products in your posts and stories.
-              </p>
-              <Button variant="link" className="mt-2 h-auto p-0 text-sm">
-                Set Up Shop
-              </Button>
-            </div>
+            {isLoading
+              ? Array(3)
+                  .fill(0)
+                  .map((_, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg border bg-card p-4 shadow-sm space-y-3"
+                    >
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-5 w-40" />
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  ))
+              : [
+                  {
+                    icon: <Users className="h-4 w-4 text-primary" />,
+                    title: "Engage with Followers",
+                    description:
+                      "You have 15 unanswered comments. Respond to increase engagement.",
+                    link: "/comments",
+                    linkText: "View Comments",
+                  },
+                  {
+                    icon: <BarChart3 className="h-4 w-4 text-primary" />,
+                    title: "Optimize Posting Schedule",
+                    description:
+                      "Your audience is most active at 6-8 PM. Schedule posts accordingly.",
+                    linkText: "Create Schedule",
+                  },
+                  {
+                    icon: <ShoppingBag className="h-4 w-4 text-primary" />,
+                    title: "Set Up Shop Feature",
+                    description:
+                      "Increase sales by tagging products in your posts and stories.",
+                    linkText: "Set Up Shop",
+                  },
+                ].map((action, i) => (
+                  <div
+                    key={i}
+                    className="rounded-lg border bg-card p-4 shadow-sm"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                      {action.icon}
+                    </div>
+                    <h3 className="mt-4 font-medium">{action.title}</h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {action.description}
+                    </p>
+                    <Button
+                      variant="link"
+                      className="mt-2 h-auto p-0 text-sm"
+                      asChild={!!action.link}
+                    >
+                      {action.link ? (
+                        <Link href={action.link}>{action.linkText}</Link>
+                      ) : (
+                        action.linkText
+                      )}
+                    </Button>
+                  </div>
+                ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-full bg-red-100 p-2 dark:bg-red-900/50">
+                <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="font-medium text-red-600 dark:text-red-400">
+                  Error Loading Data
+                </h3>
+                <p className="text-sm text-red-600/80 dark:text-red-400/80">
+                  {error}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/50"
+                onClick={() => window.location.reload()}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

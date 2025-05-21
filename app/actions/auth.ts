@@ -10,6 +10,7 @@ export async function loginUser(email: string) {
     body: JSON.stringify({ email }),
   });
 
+  console.log(res);
   if (!res.ok) {
     throw new Error("Failed to login");
   }

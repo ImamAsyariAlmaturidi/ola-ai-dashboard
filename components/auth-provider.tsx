@@ -1,62 +1,108 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
+import {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  type ReactNode,
+} from "react";
 
-import { createContext, useContext, useState, useEffect } from "react"
+type FacebookPage = {
+  page_id: string;
+  page_name: string;
+  fb_user_id: string;
+  ig_id: string;
+  is_selected: boolean;
+};
 
-type User = {
-  username: string
-  email: string
-  avatar: string
-  connected?: boolean
-  accountId?: string
-}
+type User = any; // Replace with actual User type if available
+type InstagramProfile = any; // Replace with actual InstagramProfile type if available
 
 type AuthContextType = {
-  user: User | null
-  login: (user: User) => void
-  logout: () => void
-  connectInstagram: (connected: boolean, accountId?: string) => void
+  user: User | null;
+  facebookPage: FacebookPage | null;
+  instagramProfile: InstagramProfile | null;
+  login: (user: User) => void;
+  logout: () => void;
+  connectPage: (page: FacebookPage | null) => void;
+  disconnectPage: () => void;
+  setInstagramProfile: (profile: InstagramProfile | null) => void;
+};
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [facebookPage, setFacebookPage] = useState<FacebookPage | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [instagramProfile, setInstagramProfile] =
+    useState<InstagramProfile | null>(null);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-
-  // Check for saved user on mount
   useEffect(() => {
-    const savedUser = localStorage.getItem("instagram_user")
-    if (savedUser) {
-      setUser(JSON.parse(savedUser))
+    const storedPage = localStorage.getItem("facebook_page");
+    if (storedPage) {
+      try {
+        const parsedPage = JSON.parse(storedPage) as FacebookPage;
+        setFacebookPage(parsedPage);
+      } catch (error) {
+        console.error("Error parsing stored Facebook page:", error);
+        localStorage.removeItem("facebook_page");
+      }
     }
-  }, [])
+  }, []);
 
-  const login = (userData: User) => {
-    setUser(userData)
-    localStorage.setItem("instagram_user", JSON.stringify(userData))
-  }
+  const connectPage = (page: FacebookPage | null) => {
+    setFacebookPage(page);
+    if (page) {
+      localStorage.setItem("facebook_page", JSON.stringify(page));
+    } else {
+      localStorage.removeItem("facebook_page");
+    }
+  };
+
+  const disconnectPage = () => {
+    setFacebookPage(null);
+    localStorage.removeItem("facebook_page");
+  };
+
+  const login = (user: User) => {
+    setUser(user);
+    // Store user data in local storage or cookies if needed
+  };
 
   const logout = () => {
-    setUser(null)
-    localStorage.removeItem("instagram_user")
-  }
+    setUser(null);
+    // Remove user data from local storage or cookies if needed
+  };
 
-  const connectInstagram = (connected: boolean, accountId?: string) => {
-    if (user) {
-      const updatedUser = { ...user, connected, accountId }
-      setUser(updatedUser)
-      localStorage.setItem("instagram_user", JSON.stringify(updatedUser))
-    }
-  }
+  const setInstagramProfileAndSave = (profile: InstagramProfile | null) => {
+    setInstagramProfile(profile);
+    // Optionally, store the profile in local storage or cookies
+  };
 
-  return <AuthContext.Provider value={{ user, login, logout, connectInstagram }}>{children}</AuthContext.Provider>
-}
+  const value: AuthContextType = {
+    user,
+    facebookPage,
+    instagramProfile,
+    login,
+    logout,
+    connectPage,
+    disconnectPage,
+    setInstagramProfile: setInstagramProfileAndSave,
+  };
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context
-}
+  return context;
+};

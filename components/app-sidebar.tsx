@@ -56,28 +56,28 @@ const menuItems = [
   },
 ];
 
-// const businessItems = [
-//   {
-//     title: "Audience",
-//     icon: Users,
-//     href: "/audience",
-//   },
-//   {
-//     title: "Campaigns",
-//     icon: TrendingUp,
-//     href: "/campaigns",
-//   },
-//   {
-//     title: "Shop",
-//     icon: ShoppingBag,
-//     href: "/shop",
-//   },
-//   {
-//     title: "Settings",
-//     icon: Settings,
-//     href: "/settings",
-//   },
-// ]
+const businessItems = [
+  {
+    title: "Audience",
+    icon: Users,
+    href: "/audience",
+  },
+  {
+    title: "Campaigns",
+    icon: TrendingUp,
+    href: "/campaigns",
+  },
+  {
+    title: "Shop",
+    icon: ShoppingBag,
+    href: "/shop",
+  },
+  {
+    title: "Settings",
+    icon: Settings,
+    href: "/settings",
+  },
+];
 
 export function AppSidebar() {
   const pathname = usePathname();
@@ -116,7 +116,7 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {/* <SidebarGroup>
+        <SidebarGroup>
           <SidebarGroupLabel>Business Tools</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -136,9 +136,9 @@ export function AppSidebar() {
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup> */}
+        </SidebarGroup>
       </SidebarContent>
-      {/* <SidebarFooter className="p-4">
+      <SidebarFooter className="p-4">
         <div className="rounded-lg bg-primary/10 p-4">
           <h4 className="font-medium">Upgrade to Pro</h4>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -148,7 +148,7 @@ export function AppSidebar() {
             Upgrade
           </Button>
         </div>
-      </SidebarFooter> */}
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

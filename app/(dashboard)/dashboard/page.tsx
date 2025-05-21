@@ -1,13 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { useAuth } from "@/components/auth-provider"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useState } from "react";
+import Link from "next/link";
+import { useAuth } from "@/components/auth-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowUpRight,
   BarChart3,
@@ -20,7 +27,7 @@ import {
   TrendingUp,
   Users,
   XCircle,
-} from "lucide-react"
+} from "lucide-react";
 
 // Mock data
 const stats = {
@@ -37,7 +44,7 @@ const stats = {
   totalPosts: 156,
   conversionRate: 2.4,
   conversionGrowth: 0.5,
-}
+};
 
 const recentPosts = [
   {
@@ -64,7 +71,7 @@ const recentPosts = [
     date: "1 week ago",
     engagement: 3.2,
   },
-]
+];
 
 const campaigns = [
   {
@@ -94,12 +101,20 @@ const campaigns = [
     conversion: 3.2,
     roi: 4.2,
   },
-]
+];
 
 export default function DashboardPage() {
-  const { user } = useAuth()
-  const [timeframe, setTimeframe] = useState("week")
+  const { user, instagramProfile } = useAuth();
+  const [timeframe, setTimeframe] = useState("week");
 
+  //Default Instagram profile data for preview
+  const profileData = instagramProfile || {
+    username: "instagram_business",
+    profilePictureUrl: "/placeholder.svg?height=80&width=80",
+    followersCount: 12458,
+    connected: false,
+    accountId: "IG12345678",
+  };
   // Default user data for preview
   const userData = user || {
     username: "instagram_business",
@@ -107,18 +122,26 @@ export default function DashboardPage() {
     avatar: "/placeholder.svg?height=40&width=40",
     connected: true,
     accountId: "IG12345678",
-  }
+  };
 
   return (
     <div className="space-y-6">
       {/* Business Overview Section */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Business Dashboard</h1>
-          <p className="text-muted-foreground">Analytics and insights for your Instagram business account</p>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Business Dashboard
+          </h1>
+          <p className="text-muted-foreground">
+            Analytics and insights for your Instagram business account
+          </p>
         </div>
         <div className="flex items-center gap-2">
-          <Tabs defaultValue="week" className="w-[250px]" onValueChange={setTimeframe}>
+          <Tabs
+            defaultValue="week"
+            className="w-[250px]"
+            onValueChange={setTimeframe}
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="day">Day</TabsTrigger>
               <TabsTrigger value="week">Week</TabsTrigger>
@@ -136,11 +159,15 @@ export default function DashboardPage() {
         <CardHeader className="pb-2">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
-              <CardTitle className="text-2xl">Welcome, @{userData.username}</CardTitle>
-              <CardDescription>Here's what's happening with your Instagram business account</CardDescription>
+              <CardTitle className="text-2xl">
+                Welcome, @{profileData.username}
+              </CardTitle>
+              <CardDescription>
+                Here's what's happening with your Instagram business account
+              </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {userData.connected ? (
+              {profileData.connected ? (
                 <div className="flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1.5 text-sm font-medium text-green-600 dark:text-green-400">
                   <CheckCircle className="h-4 w-4" />
                   <span>Connected</span>
@@ -151,7 +178,7 @@ export default function DashboardPage() {
                   <span>Not Connected</span>
                 </div>
               )}
-              {!userData.connected && (
+              {!profileData.connected && (
                 <Button
                   variant="default"
                   size="sm"
@@ -167,14 +194,21 @@ export default function DashboardPage() {
         <CardContent className="pb-2">
           <div className="flex flex-col items-start gap-6 sm:flex-row">
             <Avatar className="h-20 w-20 border-4 border-background">
-              <AvatarImage src={userData.avatar || "/placeholder.svg"} alt={userData.username} />
-              <AvatarFallback>{userData.username[0]}</AvatarFallback>
+              <AvatarImage
+                src={"/placeholder.svg"}
+                alt={profileData.username}
+              />
+              <AvatarFallback>{profileData.username[0]}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Followers</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Followers
+                </p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">{stats.followers.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    {stats.followers.toLocaleString()}
+                  </p>
                   <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
                     <TrendingUp className="mr-0.5 h-3 w-3" />
                     {stats.followersGrowth}%
@@ -182,7 +216,9 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Engagement</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Engagement
+                </p>
                 <div className="flex items-baseline gap-1">
                   <p className="text-2xl font-bold">{stats.engagement}%</p>
                   <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
@@ -192,9 +228,13 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Impressions</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Impressions
+                </p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">{stats.impressions.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    {stats.impressions.toLocaleString()}
+                  </p>
                   <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
                     <TrendingUp className="mr-0.5 h-3 w-3" />
                     {stats.impressionsGrowth}%
@@ -202,9 +242,13 @@ export default function DashboardPage() {
                 </div>
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">Reach</p>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Reach
+                </p>
                 <div className="flex items-baseline gap-1">
-                  <p className="text-2xl font-bold">{stats.reach.toLocaleString()}</p>
+                  <p className="text-2xl font-bold">
+                    {stats.reach.toLocaleString()}
+                  </p>
                   <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
                     <TrendingUp className="mr-0.5 h-3 w-3" />
                     {stats.reachGrowth}%
@@ -227,14 +271,18 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Engagement Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Engagement Rate
+            </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.engagement}%</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">+{stats.engagementGrowth}%</span> from last{" "}
-              {timeframe}
+              <span className="text-green-600 dark:text-green-400">
+                +{stats.engagementGrowth}%
+              </span>{" "}
+              from last {timeframe}
             </p>
             <div className="mt-3">
               <Progress value={stats.engagement * 10} className="h-1" />
@@ -243,14 +291,18 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Conversion Rate</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Conversion Rate
+            </CardTitle>
             <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.conversionRate}%</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">+{stats.conversionGrowth}%</span> from last{" "}
-              {timeframe}
+              <span className="text-green-600 dark:text-green-400">
+                +{stats.conversionGrowth}%
+              </span>{" "}
+              from last {timeframe}
             </p>
             <div className="mt-3">
               <Progress value={stats.conversionRate * 10} className="h-1" />
@@ -259,13 +311,16 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Audience Growth</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Audience Growth
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">+{stats.followersGrowth}%</div>
             <p className="text-xs text-muted-foreground">
-              +{Math.round(stats.followers * (stats.followersGrowth / 100))} new followers this {timeframe}
+              +{Math.round(stats.followers * (stats.followersGrowth / 100))} new
+              followers this {timeframe}
             </p>
             <div className="mt-3">
               <Progress value={stats.followersGrowth * 5} className="h-1" />
@@ -274,13 +329,16 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Estimated Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Estimated Revenue
+            </CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$1,245</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600 dark:text-green-400">+12.5%</span> from last {timeframe}
+              <span className="text-green-600 dark:text-green-400">+12.5%</span>{" "}
+              from last {timeframe}
             </p>
             <div className="mt-3">
               <Progress value={62.5} className="h-1" />
@@ -295,7 +353,9 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Marketing Campaigns</CardTitle>
-              <CardDescription>Track your campaign performance and ROI</CardDescription>
+              <CardDescription>
+                Track your campaign performance and ROI
+              </CardDescription>
             </div>
             <Button size="sm">Create Campaign</Button>
           </div>
@@ -315,8 +375,8 @@ export default function DashboardPage() {
                         campaign.status === "Active"
                           ? "bg-green-500/10 text-green-600 dark:text-green-400"
                           : campaign.status === "Scheduled"
-                            ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                            : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
+                          ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                          : "bg-gray-500/10 text-gray-600 dark:text-gray-400"
                       }`}
                     >
                       {campaign.status}
@@ -331,15 +391,25 @@ export default function DashboardPage() {
                 {campaign.status !== "Scheduled" && (
                   <div className="flex flex-wrap gap-3 sm:gap-6">
                     <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">Engagement</p>
-                      <p className="text-sm font-bold">{campaign.engagement}%</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Engagement
+                      </p>
+                      <p className="text-sm font-bold">
+                        {campaign.engagement}%
+                      </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">Conversion</p>
-                      <p className="text-sm font-bold">{campaign.conversion}%</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Conversion
+                      </p>
+                      <p className="text-sm font-bold">
+                        {campaign.conversion}%
+                      </p>
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-medium text-muted-foreground">ROI</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        ROI
+                      </p>
                       <p className="text-sm font-bold">{campaign.roi}x</p>
                     </div>
                     <Button variant="outline" size="sm" className="ml-auto">
@@ -368,7 +438,9 @@ export default function DashboardPage() {
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Top Performing Content</CardTitle>
-            <CardDescription>Your posts with the highest engagement rates</CardDescription>
+            <CardDescription>
+              Your posts with the highest engagement rates
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -384,12 +456,16 @@ export default function DashboardPage() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <p className="font-medium">Post #{post.id}</p>
-                      <p className="text-xs text-muted-foreground">{post.date}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {post.date}
+                      </p>
                     </div>
                     <div className="mt-1 flex gap-4">
                       <div className="flex items-center gap-1">
                         <Heart className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">{post.likes.toLocaleString()}</span>
+                        <span className="text-sm">
+                          {post.likes.toLocaleString()}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1">
                         <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
@@ -397,7 +473,9 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">{post.engagement}% engagement</span>
+                        <span className="text-sm">
+                          {post.engagement}% engagement
+                        </span>
                       </div>
                     </div>
                     <div className="mt-2">
@@ -411,7 +489,8 @@ export default function DashboardPage() {
           <CardFooter>
             <Button variant="link" className="px-0 text-sm" asChild>
               <Link href="/analytics">
-                View all content performance <ChevronRight className="ml-1 h-4 w-4" />
+                View all content performance{" "}
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
           </CardFooter>
@@ -420,7 +499,9 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle>Audience Insights</CardTitle>
-            <CardDescription>Your audience demographics and behavior</CardDescription>
+            <CardDescription>
+              Your audience demographics and behavior
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -491,7 +572,8 @@ export default function DashboardPage() {
           <CardFooter>
             <Button variant="link" className="px-0 text-sm" asChild>
               <Link href="/analytics">
-                View detailed audience data <ChevronRight className="ml-1 h-4 w-4" />
+                View detailed audience data{" "}
+                <ChevronRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
           </CardFooter>
@@ -502,7 +584,9 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Recommended Actions</CardTitle>
-          <CardDescription>Optimize your Instagram business performance</CardDescription>
+          <CardDescription>
+            Optimize your Instagram business performance
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -514,7 +598,11 @@ export default function DashboardPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 You have 15 unanswered comments. Respond to increase engagement.
               </p>
-              <Button variant="link" className="mt-2 h-auto p-0 text-sm" asChild>
+              <Button
+                variant="link"
+                className="mt-2 h-auto p-0 text-sm"
+                asChild
+              >
                 <Link href="/comments">View Comments</Link>
               </Button>
             </div>
@@ -524,7 +612,8 @@ export default function DashboardPage() {
               </div>
               <h3 className="mt-4 font-medium">Optimize Posting Schedule</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Your audience is most active at 6-8 PM. Schedule posts accordingly.
+                Your audience is most active at 6-8 PM. Schedule posts
+                accordingly.
               </p>
               <Button variant="link" className="mt-2 h-auto p-0 text-sm">
                 Create Schedule
@@ -546,5 +635,5 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

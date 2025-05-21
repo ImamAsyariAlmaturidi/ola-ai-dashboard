@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { useAuth } from "@/components/auth-provider";
 import { toast } from "sonner";
+import { selectFacebookPage } from "@/app/actions/facebookPagesService";
 
 export type FacebookPage = {
   page_id: string;
@@ -53,31 +54,24 @@ export function FacebookPagesModal({
 
   const handleSaveSelection = async () => {
     try {
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        toast.error("Unauthorized. Please log in again.");
+        return;
+      }
+
       const selectedPage = selectedPages.find((page) => page.is_selected);
       if (!selectedPage) {
         toast.error("Please select at least one page");
         return;
       }
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/select-facebook-page`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-          body: JSON.stringify({
-            page_id: selectedPage.page_id,
-            ig_id: selectedPage.ig_id,
-          }),
-        }
+      const page = await selectFacebookPage(
+        token,
+        selectedPage.page_id,
+        selectedPage.ig_id
       );
-
-      if (!response.ok) throw new Error("Failed to save page selection");
-
-      const data = await response.json();
-      connectPage(data.page);
+      connectPage(page);
       toast.success("Instagram page connected successfully!");
       onClose();
     } catch (error) {

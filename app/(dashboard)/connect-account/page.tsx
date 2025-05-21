@@ -27,6 +27,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@radix-ui/react-accordion";
+import { unselectFacebookPage } from "@/app/actions/facebookPagesService";
 
 type FacebookPage = {
   page_id: string;
@@ -66,10 +67,19 @@ export default function ConnectAccountPage() {
     window.location.href = loginUrl;
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    // Optional: trigger refresh or state update here
     if (facebookPage) {
       disconnectPage();
-      toast.success("Facebook Page disconnected");
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        toast.error("Unauthorized");
+        return;
+      }
+
+      const page = await unselectFacebookPage(token, facebookPage.page_id);
+      console.log("Page unselected:", page);
+      toast.success("Page unselected successfully!");
     }
   };
 
@@ -170,7 +180,7 @@ export default function ConnectAccountPage() {
                       <Avatar className="h-16 w-16">
                         <AvatarImage
                           src={
-                            instagramProfile.profilePictureUrl ||
+                            instagramProfile.profile_picture_url ||
                             "/placeholder.svg"
                           }
                           alt={instagramProfile.username}
@@ -184,9 +194,9 @@ export default function ConnectAccountPage() {
                           @{instagramProfile.username}
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          {instagramProfile.followersCount && (
+                          {instagramProfile.followers_count && (
                             <span>
-                              {instagramProfile.followersCount.toLocaleString()}{" "}
+                              {instagramProfile.followers_count.toLocaleString()}{" "}
                               followers
                             </span>
                           )}

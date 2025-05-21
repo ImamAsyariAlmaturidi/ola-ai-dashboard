@@ -18,8 +18,18 @@ type FacebookPage = {
 };
 
 type User = any; // Replace with actual User type if available
-type InstagramProfile = any; // Replace with actual InstagramProfile type if available
-
+export type InstagramProfile = {
+  biography: string;
+  created_at: string;
+  followers_count: number;
+  follows_count: number;
+  ig_id: string;
+  is_verified: boolean;
+  profile_picture_url?: string;
+  user_id: string;
+  username: string;
+  connected: boolean;
+};
 type AuthContextType = {
   user: User | null;
   facebookPage: FacebookPage | null;

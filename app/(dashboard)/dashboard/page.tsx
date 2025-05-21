@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useAuth } from "@/components/auth-provider";
+import { InstagramProfile, useAuth } from "@/components/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,7 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
+import { getInstagramProfile } from "@/app/actions/instagramService";
 
 // Mock data
 const stats = {
@@ -104,24 +105,49 @@ const campaigns = [
 ];
 
 export default function DashboardPage() {
-  const { user, instagramProfile } = useAuth();
+  const { user, instagramProfile, setInstagramProfile } = useAuth();
   const [timeframe, setTimeframe] = useState("week");
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
 
-  //Default Instagram profile data for preview
-  const profileData = instagramProfile || {
+    async function fetchProfile() {
+      try {
+        const profile = (await getInstagramProfile(
+          token!
+        )) as InstagramProfile[];
+
+        profile[0].connected = true;
+        setInstagramProfile(profile[0]);
+      } catch (error) {
+        console.error("Error fetching Instagram profile:", error);
+      }
+    }
+
+    if (!instagramProfile) {
+      fetchProfile();
+    } else {
+      console.log("Using existing Instagram profile:", instagramProfile);
+    }
+  }, [instagramProfile, setInstagramProfile]);
+  // Default Instagram profile data for preview
+  const dummyProfile = {
     username: "instagram_business",
     profilePictureUrl: "/placeholder.svg?height=80&width=80",
     followersCount: 12458,
     connected: false,
     accountId: "IG12345678",
   };
-  // Default user data for preview
-  const userData = user || {
-    username: "instagram_business",
-    email: "business@example.com",
-    avatar: "/placeholder.svg?height=40&width=40",
-    connected: true,
-    accountId: "IG12345678",
+
+  // Use Instagram profile data when available, fallback to dummy data for missing fields
+  const profileData = {
+    username: instagramProfile?.username || dummyProfile.username,
+    profilePictureUrl:
+      instagramProfile?.profile_picture_url || dummyProfile.profilePictureUrl,
+    followersCount:
+      instagramProfile?.followers_count || dummyProfile.followersCount,
+    connected: instagramProfile?.connected || dummyProfile.connected,
+    accountId: instagramProfile?.ig_id || dummyProfile.accountId,
   };
 
   return (
@@ -195,7 +221,7 @@ export default function DashboardPage() {
           <div className="flex flex-col items-start gap-6 sm:flex-row">
             <Avatar className="h-20 w-20 border-4 border-background">
               <AvatarImage
-                src={"/placeholder.svg"}
+                src={profileData.profilePictureUrl || "/placeholder.svg"}
                 alt={profileData.username}
               />
               <AvatarFallback>{profileData.username[0]}</AvatarFallback>
@@ -207,7 +233,7 @@ export default function DashboardPage() {
                 </p>
                 <div className="flex items-baseline gap-1">
                   <p className="text-2xl font-bold">
-                    {stats.followers.toLocaleString()}
+                    {profileData.followersCount.toLocaleString()}
                   </p>
                   <span className="flex items-center text-xs font-medium text-green-600 dark:text-green-400">
                     <TrendingUp className="mr-0.5 h-3 w-3" />

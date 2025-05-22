@@ -405,6 +405,13 @@ export default function InstagramGridFeed() {
 
   return (
     <div className="container mx-auto py-4 px-2 md:px-4 max-w-screen-xl">
+      {/* Header for mobile */}
+      <div className="flex items-center justify-between mb-4 md:hidden">
+        <div className="flex items-center gap-2">
+          <h1 className="text-xl font-semibold">My Instagram Feed</h1>
+        </div>
+      </div>
+
       {/* Header for desktop */}
       <div className="hidden md:flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">My Instagram Feed</h1>

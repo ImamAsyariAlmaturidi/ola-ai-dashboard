@@ -2,20 +2,15 @@
 import * as React from "react";
 import {
   BarChart3,
-  BookOpen,
-  Bot,
   Command,
   Frame,
   Home,
   Inbox,
   LifeBuoy,
   LinkIcon,
-  Map,
   MessageSquare,
   PieChart,
   Send,
-  Settings2,
-  SquareTerminal,
 } from "lucide-react";
 
 import { NavMain } from "@/components/nav-main";
@@ -31,6 +26,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 // Use the data structure from the updated file
@@ -100,6 +96,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     null
   );
 
+  // Get sidebar state and functions
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  // Function to close mobile sidebar
+  const handleMenuItemClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
+
   return (
     <Sidebar
       variant="floating"
@@ -125,14 +131,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="overflow-y-auto">
-        {/* Pass the open submenu state to NavMain */}
+        {/* Pass the open submenu state and click handler to NavMain */}
         <NavMain
           items={data.navMain}
           openSubmenuIndex={openSubmenuIndex}
           setOpenSubmenuIndex={setOpenSubmenuIndex}
+          onMenuItemClick={handleMenuItemClick}
         />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavProjects
+          projects={data.projects}
+          onMenuItemClick={handleMenuItemClick}
+        />
+        <NavSecondary
+          items={data.navSecondary}
+          className="mt-auto"
+          onMenuItemClick={handleMenuItemClick}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

@@ -1,40 +1,60 @@
-import * as React from "react";
-import { type LucideIcon } from "lucide-react";
+"use client";
 
+import type * as React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+import { cn } from "@/lib/utils";
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-export function NavSecondary({
-  items,
-  ...props
-}: {
+interface NavSecondaryProps extends React.HTMLAttributes<HTMLDivElement> {
   items: {
     title: string;
     url: string;
-    icon: LucideIcon;
+    icon: React.ComponentType<{ className?: string }>;
   }[];
-} & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
+  onMenuItemClick?: () => void;
+}
+
+export function NavSecondary({
+  items,
+  onMenuItemClick,
+  className,
+  ...props
+}: NavSecondaryProps) {
+  const pathname = usePathname();
+
   return (
-    <SidebarGroup {...props}>
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild size="sm">
-                <a href={item.url}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
+    <div className={cn("space-y-1", className)} {...props}>
+      <SidebarGroup>
+        <SidebarGroupLabel>Support</SidebarGroupLabel>
+        <SidebarGroupContent>
+          <SidebarMenu>
+            {items.map((item, index) => (
+              <SidebarMenuItem key={index}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === item.url}
+                  tooltip={item.title}
+                  onClick={onMenuItemClick}
+                >
+                  <Link href={item.url}>
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroupContent>
+      </SidebarGroup>
+    </div>
   );
 }

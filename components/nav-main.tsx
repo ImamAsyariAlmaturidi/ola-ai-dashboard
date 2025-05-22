@@ -34,12 +34,14 @@ interface NavMainProps extends React.HTMLAttributes<HTMLDivElement> {
   }[];
   openSubmenuIndex: number | null;
   setOpenSubmenuIndex: React.Dispatch<React.SetStateAction<number | null>>;
+  onMenuItemClick?: () => void;
 }
 
 export function NavMain({
   items,
   openSubmenuIndex,
   setOpenSubmenuIndex,
+  onMenuItemClick,
   className,
   ...props
 }: NavMainProps) {
@@ -71,6 +73,7 @@ export function NavMain({
                       asChild
                       isActive={isActive}
                       tooltip={item.title}
+                      onClick={onMenuItemClick}
                     >
                       <Link href={item.url}>
                         <item.icon className="h-4 w-4" />
@@ -109,6 +112,7 @@ export function NavMain({
                               asChild
                               isActive={pathname === subItem.url}
                               size="sm"
+                              onClick={onMenuItemClick}
                             >
                               <Link href={subItem.url}>{subItem.title}</Link>
                             </SidebarMenuButton>

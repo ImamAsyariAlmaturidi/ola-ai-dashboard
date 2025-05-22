@@ -405,15 +405,6 @@ export default function InstagramGridFeed() {
 
   return (
     <div className="container mx-auto py-4 px-2 md:px-4 max-w-screen-xl">
-      {/* Header for mobile */}
-      <div className="flex items-center justify-between mb-4 md:hidden">
-        <div className="flex items-center gap-2">
-          <ChevronLeft className="h-6 w-6" />
-          <h1 className="text-xl font-semibold">Jelajahi</h1>
-        </div>
-        <Camera className="h-6 w-6" />
-      </div>
-
       {/* Header for desktop */}
       <div className="hidden md:flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold">My Instagram Feed</h1>
@@ -494,19 +485,6 @@ export default function InstagramGridFeed() {
             )}
           </div>
         ))}
-      </div>
-
-      {/* Emoji Reactions Bar (Mobile Only) */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-3 flex justify-between md:hidden">
-        <div className="flex gap-4 overflow-x-auto">
-          {["❤️", "🙌", "🔥", "👏", "😢", "😍", "😮", "😂"].map(
-            (emoji, index) => (
-              <button key={index} className="text-2xl">
-                {emoji}
-              </button>
-            )
-          )}
-        </div>
       </div>
     </div>
   );

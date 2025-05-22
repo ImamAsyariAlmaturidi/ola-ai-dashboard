@@ -1,26 +1,31 @@
 "use client";
-
-import { Button } from "@/components/ui/button";
-
-import { usePathname } from "next/navigation";
+import * as React from "react";
 import {
   BarChart3,
+  BookOpen,
+  Bot,
+  Command,
+  Frame,
   Home,
   Inbox,
-  Link,
+  LifeBuoy,
+  LinkIcon,
+  Map,
   MessageSquare,
-  Settings,
-  ShoppingBag,
-  TrendingUp,
-  Users,
+  PieChart,
+  Send,
+  Settings2,
+  SquareTerminal,
 } from "lucide-react";
+
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavSecondary } from "@/components/nav-secondary";
+import { NavUser } from "@/components/nav-user";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -28,127 +33,111 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-const menuItems = [
-  {
-    title: "Dashboard",
-    icon: Home,
-    href: "/dashboard",
+// Use the data structure from the updated file
+const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
   },
-  {
-    title: "Connect Account",
-    icon: Link,
-    href: "/connect-account",
-  },
-  {
-    title: "Comments",
-    icon: MessageSquare,
-    href: "/comments",
-  },
-  {
-    title: "Direct Messages",
-    icon: Inbox,
-    href: "/messages",
-  },
-  {
-    title: "Analytics",
-    icon: BarChart3,
-    href: "/analytics",
-  },
-];
+  navMain: [
+    {
+      title: "Dashboard",
+      icon: Home,
+      url: "/dashboard",
+    },
+    {
+      title: "Connect Account",
+      icon: LinkIcon,
+      url: "/connect-account",
+    },
+    {
+      title: "Posts & Comments",
+      icon: MessageSquare,
+      url: "/posts-comments",
+    },
+    {
+      title: "Direct Messages",
+      icon: Inbox,
+      url: "/messages",
+    },
+    {
+      title: "Analytics",
+      icon: BarChart3,
+      url: "/analytics",
+    },
+  ],
 
-const businessItems = [
-  {
-    title: "Audience",
-    icon: Users,
-    href: "/audience",
-  },
-  {
-    title: "Campaigns",
-    icon: TrendingUp,
-    href: "/campaigns",
-  },
-  {
-    title: "Shop",
-    icon: ShoppingBag,
-    href: "/shop",
-  },
-  {
-    title: "Settings",
-    icon: Settings,
-    href: "/settings",
-  },
-];
+  navSecondary: [
+    {
+      title: "Support",
+      url: "#",
+      icon: LifeBuoy,
+    },
+    {
+      title: "Feedback",
+      url: "#",
+      icon: Send,
+    },
+  ],
+  projects: [
+    {
+      name: "Design Engineering",
+      url: "#",
+      icon: Frame,
+    },
+    {
+      name: "Sales & Marketing",
+      url: "#",
+      icon: PieChart,
+    },
+  ],
+};
 
-export function AppSidebar() {
-  const pathname = usePathname();
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  // Create a context to track which submenu is open
+  const [openSubmenuIndex, setOpenSubmenuIndex] = React.useState<number | null>(
+    null
+  );
 
   return (
-    <Sidebar variant="floating" collapsible="icon">
-      <SidebarHeader className="flex h-16 items-center px-4">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary">
-            <span className="text-lg font-bold text-primary-foreground">
-              IM
-            </span>
-          </div>
-          <span className="text-lg font-semibold">Ola AI Dashboard</span>
-        </div>
+    <Sidebar
+      variant="floating"
+      collapsible="icon"
+      className="top-[--header-height] !h-[calc(100svh-var(--header-height))]"
+      {...props}
+    >
+      <SidebarHeader>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg" asChild>
+              <a href="#">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                  <Command className="size-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-semibold">OLA AI</span>
+                  <span className="truncate text-xs">Enterprise</span>
+                </div>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                  >
-                    <a href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-        <SidebarGroup>
-          <SidebarGroupLabel>Business Tools</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {businessItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                  >
-                    <a href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+      <SidebarContent className="overflow-y-auto">
+        {/* Pass the open submenu state to NavMain */}
+        <NavMain
+          items={data.navMain}
+          openSubmenuIndex={openSubmenuIndex}
+          setOpenSubmenuIndex={setOpenSubmenuIndex}
+        />
+        <NavProjects projects={data.projects} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter className="p-4">
-        <div className="rounded-lg bg-primary/10 p-4">
-          <h4 className="font-medium">Upgrade to Pro</h4>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Get advanced analytics and business tools
-          </p>
-          <Button className="mt-3 w-full" size="sm">
-            Upgrade
-          </Button>
-        </div>
+      <SidebarFooter>
+        <NavUser user={data.user} />
       </SidebarFooter>
+      {/* Add SidebarRail for collapsible functionality */}
       <SidebarRail />
     </Sidebar>
   );

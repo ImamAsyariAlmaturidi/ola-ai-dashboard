@@ -10,12 +10,12 @@ export async function loginUser(email: string) {
     body: JSON.stringify({ email }),
   });
 
-  console.log(res);
   if (!res.ok) {
     throw new Error("Failed to login");
   }
 
   const data = await res.json();
+
   return data;
 }
 
@@ -28,11 +28,11 @@ export async function verifyCode(email: string, code: string) {
     body: JSON.stringify({ email, code }),
   });
 
-  const data = await res.json();
-  console.log("verifyCode", data);
   if (!res.ok) {
     throw new Error("Failed to verify code");
   }
+
+  const data = await res.json();
 
   return data;
 }

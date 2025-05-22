@@ -1,40 +1,46 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useRouter } from "next/navigation"
-import { useAuth } from "@/components/auth-provider"
-import { AppSidebar } from "@/components/app-sidebar"
-import { TopNavbar } from "@/components/top-navbar"
-import { SidebarInset } from "@/components/ui/sidebar"
+import type React from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
+import { AppSidebar } from "@/components/app-sidebar";
+
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { SiteHeader } from "@/components/site-header";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  const { user } = useAuth()
-  const router = useRouter()
+  const { user } = useAuth();
+  const router = useRouter();
 
-  // Note: Authentication check is disabled for preview purposes
-  // Normally, we would redirect unauthenticated users to the login page
+  // Uncomment this if you want to protect the dashboard
   // useEffect(() => {
   //   if (!user) {
   //     router.push("/login")
   //   }
-  // }, [user, router])
-
-  // Remove this conditional check to allow preview without authentication
-  // if (!user) {
-  //   return null
-  // }
+  // }, [user, router]);
 
   return (
-    <div className="flex min-h-screen">
-      <AppSidebar />
-      <SidebarInset>
-        <TopNavbar />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
-      </SidebarInset>
-    </div>
-  )
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen">
+        <AppSidebar />
+        <div className="flex flex-1 flex-col">
+          <SiteHeader />
+
+          <div className="flex flex-1">
+            <SidebarInset>
+              <main className="flex-1 p-4 md:p-6">{children}</main>
+            </SidebarInset>
+          </div>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
 }

@@ -23,3 +23,26 @@ export async function getInstagramProfile(token: string) {
     throw error;
   }
 }
+
+export async function getInstagramMediaWithComments(token: string) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/instagram/media-comments`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch media comments");
+    }
+
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("[getInstagramMediaComments] Error:", error);
+    throw error;
+  }
+}

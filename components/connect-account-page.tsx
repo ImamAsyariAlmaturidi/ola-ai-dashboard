@@ -38,7 +38,12 @@ type FacebookPage = {
 };
 
 export default function ConnectAccountPage() {
-  const { disconnectPage, facebookPage, instagramProfile } = useAuth();
+  const {
+    disconnectPage,
+    facebookPage,
+    instagramProfile,
+    syncInstagramProfile,
+  } = useAuth();
   const [isConnecting, setIsConnecting] = useState(false);
   const [facebookPages, setFacebookPages] = useState<FacebookPage[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +58,7 @@ export default function ConnectAccountPage() {
       setTimeout(() => {
         window.location.href = "/login";
       }, 2000);
+
       return;
     }
     const scope = encodeURIComponent("instagram_basic,pages_show_list");
@@ -65,6 +71,7 @@ export default function ConnectAccountPage() {
 
     // Redirect user ke Facebook OAuth
     window.location.href = loginUrl;
+    await syncInstagramProfile();
   };
 
   const handleDisconnect = async () => {
@@ -80,6 +87,7 @@ export default function ConnectAccountPage() {
       const page = await unselectFacebookPage(token, facebookPage.page_id);
       console.log("Page unselected:", page);
       toast.success("Page unselected successfully!");
+      await syncInstagramProfile();
     }
   };
 
@@ -92,7 +100,7 @@ export default function ConnectAccountPage() {
         try {
           setIsConnecting(true);
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/facebook-pages`,
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/facebook/facebook-pages`,
             {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("access_token")}`,

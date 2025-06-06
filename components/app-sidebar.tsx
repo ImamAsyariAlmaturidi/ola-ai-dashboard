@@ -2,9 +2,11 @@
 import * as React from "react";
 import {
   BarChart3,
+  BotMessageSquare,
   Command,
   Frame,
   Home,
+  icons,
   Inbox,
   LifeBuoy,
   LinkIcon,
@@ -28,6 +30,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { url } from "inspector";
 
 // Use the data structure from the updated file
 const data = {
@@ -77,6 +80,11 @@ const data = {
     },
   ],
   projects: [
+    {
+      name: "Ai Agents",
+      url: "ai-agents",
+      icon: BotMessageSquare,
+    },
     {
       name: "Design Engineering",
       url: "#",

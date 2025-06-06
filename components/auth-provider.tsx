@@ -1,5 +1,6 @@
 "use client";
 
+import { getInstagramProfile } from "@/app/actions/instagramService";
 import type React from "react";
 import {
   createContext,
@@ -39,6 +40,7 @@ type AuthContextType = {
   connectPage: (page: FacebookPage | null) => void;
   disconnectPage: () => void;
   setInstagramProfile: (profile: InstagramProfile | null) => void;
+  syncInstagramProfile: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -95,6 +97,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Optionally, store the profile in local storage or cookies
   };
 
+  const syncInstagramProfile = async () => {
+    try {
+      const res = await getInstagramProfile(
+        localStorage.getItem("access_token") as string
+      );
+      if (!res.ok) throw new Error("Failed to fetch IG profile");
+      const profile: InstagramProfile | null = await res.json();
+      setInstagramProfile(profile);
+    } catch (err) {
+      console.error("Failed to sync IG profile", err);
+      setInstagramProfile(null);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     facebookPage,
@@ -104,6 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     connectPage,
     disconnectPage,
     setInstagramProfile: setInstagramProfileAndSave,
+    syncInstagramProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

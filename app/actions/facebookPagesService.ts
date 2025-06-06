@@ -8,9 +8,9 @@ export async function selectFacebookPage(
   ig_id: string
 ) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/select-facebook-page`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/facebook/facebook-pages/select`,
     {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -28,9 +28,9 @@ export async function selectFacebookPage(
 
 export async function unselectFacebookPage(token: string, page_id: string) {
   const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/unselect-facebook-page`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/facebook/facebook-pages/unselect`,
     {
-      method: "POST",
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,

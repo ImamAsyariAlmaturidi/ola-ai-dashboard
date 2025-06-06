@@ -87,5 +87,10 @@ export default function InstagramFeedPage() {
     );
 
   // Pass the fetched data to InstagramGridFeed as a prop
-  return <InstagramGridFeed mediaData={data || []} />;
+  return (
+    <InstagramGridFeed
+      mediaData={data || []}
+      userToken={localStorage.getItem("access_token")!}
+    />
+  );
 }

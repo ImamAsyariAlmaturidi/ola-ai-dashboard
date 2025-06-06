@@ -108,7 +108,7 @@ const campaigns = [
   },
 ];
 
-export default function DashboardPage() {
+export default function qDashboardPage() {
   const { user, instagramProfile, setInstagramProfile } = useAuth();
   const [timeframe, setTimeframe] = useState("week");
   const [isLoading, setIsLoading] = useState(true);
@@ -124,13 +124,11 @@ export default function DashboardPage() {
     async function fetchProfile() {
       try {
         setIsLoading(true);
-        const profile = (await getInstagramProfile(
-          token!
-        )) as InstagramProfile[];
+        const profile = (await getInstagramProfile(token!)) as InstagramProfile;
 
-        if (profile && profile.length > 0) {
-          profile[0].connected = true;
-          setInstagramProfile(profile[0]);
+        if (profile) {
+          profile.connected = true;
+          setInstagramProfile(profile);
         }
         setError(null);
       } catch (error) {
